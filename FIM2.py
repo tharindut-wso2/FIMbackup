@@ -1,5 +1,5 @@
 import os
-import shutil
+import subprocess
 from datetime import datetime
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -19,33 +19,33 @@ class FileIntegrityHandler(FileSystemEventHandler):
             return None
 
         relative_path = os.path.relpath(file_path, src_dir)
-
         final_backup_file_path = os.path.join(backup_dir, relative_path)
 
         os.makedirs(os.path.dirname(final_backup_file_path), exist_ok=True)
         
-        if os.path.exists(final_backup_file_path):
-            timestamp = datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
-            versioned_backup_path = f"{final_backup_file_path}_{timestamp}"
-            shutil.move(final_backup_file_path, versioned_backup_path)
-            
-            # Keep only the two most recent backups
-            self.cleanup_old_backups(final_backup_file_path)
+        # Perform incremental backup using rsync
+        self.incremental_backup(file_path, final_backup_file_path)
 
-        try:
-            shutil.copy2(file_path, final_backup_file_path)
-        except FileNotFoundError:
-            print(f"File not found: {file_path}, skipping...")
+        # Optionally, manage the backup history by keeping only recent versions
+        self.cleanup_old_backups(final_backup_file_path)
+
+    def incremental_backup(self, src_file, dest_file):
+        """
+        Perform an incremental backup of the file using rsync.
+        """
+        command = ['rsync', '-a', '--backup', '--suffix=_backup_' + datetime.now().strftime('%Y%m%d%H%M%S'), src_file, dest_file]
+        subprocess.run(command, check=True)
+        print(f"Incrementally backed up: {src_file} to {dest_file}")
 
     def cleanup_old_backups(self, backup_file_path):
         # Get the directory and base filename
         backup_dir = os.path.dirname(backup_file_path)
         base_filename = os.path.basename(backup_file_path)
         
-        # List all files in the backup directory that match the base filename pattern
+        # List all backup files with the suffix pattern
         backup_files = [
             f for f in os.listdir(backup_dir) 
-            if f.startswith(base_filename) and f != base_filename
+            if f.startswith(base_filename) and '_backup_' in f
         ]
         
         # Sort backups by modification time (oldest first)
