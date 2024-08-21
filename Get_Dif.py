@@ -68,9 +68,9 @@ def cleanup_old_diffs(directory):
     diff_files = [f for f in os.listdir(directory) if f.endswith('_diff.txt')]
     diff_files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)), reverse=True)
     
-    # Keep only the two most recent files
-    for old_diff in diff_files[4:]:
-        os.remove(os.path.join(directory, old_diff))
+    # # Keep only the two most recent files
+    # for old_diff in diff_files[4:]:
+    #     os.remove(os.path.join(directory, old_diff))
 
 class Watcher:
     def __init__(self, directory):
