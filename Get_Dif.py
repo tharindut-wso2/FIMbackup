@@ -54,12 +54,23 @@ def process_file(directory, base_name):
             diff_file_name = f'{file_pair[1]}_diff.txt'
             output_dir = os.path.join(diff_dir, relative_dir)
             os.makedirs(output_dir, exist_ok=True)
-            save_diff(diff, os.path.join(output_dir, diff_file_name))
+            output_path = os.path.join(output_dir, diff_file_name)
+            save_diff(diff, output_path)
+            cleanup_old_diffs(output_dir)
 
 def save_diff(diff, output_path):
     """Save the diff to a file."""
     with open(output_path, 'w') as f:
         f.write(diff)
+
+def cleanup_old_diffs(directory):
+    """Keep only the two most recent diff files in a directory, delete the older ones."""
+    diff_files = [f for f in os.listdir(directory) if f.endswith('_diff.txt')]
+    diff_files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)), reverse=True)
+    
+    # Keep only the two most recent files
+    for old_diff in diff_files[4:]:
+        os.remove(os.path.join(directory, old_diff))
 
 class Watcher:
     def __init__(self, directory):
@@ -78,8 +89,9 @@ class Watcher:
         self.observer.join()
 
 class Handler(FileSystemEventHandler):
-    def on_created(self, event):
-        if not event.is_directory:
+    def on_modified(self, event):
+        """Handle file save event (Ctrl + O triggers this)."""
+        if not event.is_directory and not event.src_path.endswith('.swp'):
             directory, file_name = os.path.split(event.src_path)
             base_name = '_'.join(file_name.split('_')[:-1])
             process_file(directory, base_name)
