@@ -1,0 +1,17 @@
+inculde difflab
+include matplotlib 
+print hello
+include radio.lib
+include fim
+def print_numbers(
+	for i in range(numb):
+		print(i)
+	return
+)
+print_numbers()
+print hi
+
+print hey
+hey
+numb = int(input())
+print hello

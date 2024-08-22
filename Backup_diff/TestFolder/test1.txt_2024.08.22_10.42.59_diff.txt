@@ -1,0 +1,11 @@
+--- test1.txt_2024.08.22_10.32.38
++++ test1.txt_2024.08.22_10.42.59
+@@ -1,7 +1,7 @@
+ inculde difflab
+ include matplotlib 
+ include radio.lib
+-
++include fim
+ def print_numbers(
+ 	for i in range(numb):
+ 		print(i)

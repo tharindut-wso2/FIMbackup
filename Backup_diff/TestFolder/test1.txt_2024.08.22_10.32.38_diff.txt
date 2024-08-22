@@ -1,0 +1,13 @@
+--- test1.txt_2024.08.22_10.32.08
++++ test1.txt_2024.08.22_10.32.38
+@@ -2,10 +2,6 @@
+ include matplotlib 
+ include radio.lib
+ 
+-print("hi")
+-print("bye")
+-print("FIM")
+-print("NICE")
+ def print_numbers(
+ 	for i in range(numb):
+ 		print(i)

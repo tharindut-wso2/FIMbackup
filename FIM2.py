@@ -55,7 +55,7 @@ class FileIntegrityHandler(FileSystemEventHandler):
         backup_files.sort(key=lambda f: os.path.getmtime(os.path.join(backup_dir, f)))
 
         # Remove older backups if there are more than two
-        while len(backup_files) > 3:
+        while len(backup_files) > 2:
             old_backup = backup_files.pop(0)
             os.remove(os.path.join(backup_dir, old_backup))
             print(f"Removed old backup: {old_backup}")

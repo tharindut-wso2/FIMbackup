@@ -63,10 +63,10 @@ def save_diff(diff, output_path):
     with open(output_path, 'w') as f:
         f.write(diff)
 
-def cleanup_old_diffs(directory):
-    """Keep only the two most recent diff files in a directory, delete the older ones."""
-    diff_files = [f for f in os.listdir(directory) if f.endswith('_diff.txt')]
-    diff_files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)), reverse=True)
+# def cleanup_old_diffs(directory):
+#     """Keep only the two most recent diff files in a directory, delete the older ones."""
+#     diff_files = [f for f in os.listdir(directory) if f.endswith('_diff.txt')]
+#     diff_files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)), reverse=True)
     
     # # Keep only the two most recent files
     # for old_diff in diff_files[4:]:
@@ -83,7 +83,7 @@ class Watcher:
         self.observer.start()
         try:
             while True:
-                time.sleep(1)
+                time.sleep(0.5)
         except KeyboardInterrupt:
             self.observer.stop()
         self.observer.join()

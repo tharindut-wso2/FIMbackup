@@ -1,0 +1,11 @@
+--- test1.txt_2024.08.22_10.44.21
++++ test1.txt_2024.08.22_10.44.37
+@@ -9,7 +9,7 @@
+ )
+ print_numbers()
+ print hi
+-print("hello")
++
+ print hey
+ hey
+ numb = int(input())
