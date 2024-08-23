@@ -8,6 +8,9 @@ from watchdog.events import FileSystemEventHandler
 backup_dir = "/home/tharindu2/python_test/Back_up2"
 diff_dir = "/home/tharindu2/python_test/Backup_diff"
 
+if not os.path.exists(backup_dir):
+    os.makedirs(backup_dir)
+
 def compare_files(file1, file2):
     """Compare two text files and return the differences."""
     try:
@@ -63,10 +66,10 @@ def save_diff(diff, output_path):
     with open(output_path, 'w') as f:
         f.write(diff)
 
-# def cleanup_old_diffs(directory):
-#     """Keep only the two most recent diff files in a directory, delete the older ones."""
-#     diff_files = [f for f in os.listdir(directory) if f.endswith('_diff.txt')]
-#     diff_files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)), reverse=True)
+def cleanup_old_diffs(directory):
+    """Keep only the two most recent diff files in a directory, delete the older ones."""
+    diff_files = [f for f in os.listdir(directory) if f.endswith('_diff.txt')]
+    diff_files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)), reverse=True)
     
     # # Keep only the two most recent files
     # for old_diff in diff_files[4:]:
@@ -83,7 +86,7 @@ class Watcher:
         self.observer.start()
         try:
             while True:
-                time.sleep(0.5)
+                time.sleep(1)
         except KeyboardInterrupt:
             self.observer.stop()
         self.observer.join()
