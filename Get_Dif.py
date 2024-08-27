@@ -106,6 +106,8 @@ class Handler(FileSystemEventHandler):
             directory, file_name = os.path.split(event.src_path)
             remove_swp_files(directory)  # Remove any .swp files in the directory
             base_name = '_'.join(file_name.split('_')[:-1])
+
+            #add small time to create the file
             time.sleep(1)
             process_file(directory, base_name)
 
