@@ -1,0 +1,1 @@
+Skipping binary or non-readable files.

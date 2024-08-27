@@ -25,10 +25,13 @@ def compare_files(file1, file2):
         return "Skipping binary or non-readable files."
 
 def get_latest_files(directory):
+    print(directory)
     """Get the two latest files in the directory with the same base name."""
     files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+    
     files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)))
     
+    print("*", files)
     # Group files by base name (excluding timestamp)
     base_name_dict = {}
     for f in files:
@@ -48,8 +51,12 @@ def process_file(directory, base_name):
     """Process files with the same base name in the given directory and save the differences."""
     latest_files = get_latest_files(directory)
     if latest_files:
+        
         for file_pair in latest_files:
+
             file1, file2 = [os.path.join(directory, f) for f in file_pair]
+            # print("*", file1, file2)
+
             diff = compare_files(file1, file2)
 
             # Create diff file name and directory structure
@@ -59,21 +66,24 @@ def process_file(directory, base_name):
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, diff_file_name)
             save_diff(diff, output_path)
-            cleanup_old_diffs(output_dir)
 
 def save_diff(diff, output_path):
+
     """Save the diff to a file."""
     with open(output_path, 'w') as f:
         f.write(diff)
 
-def cleanup_old_diffs(directory):
-    """Keep only the two most recent diff files in a directory, delete the older ones."""
-    diff_files = [f for f in os.listdir(directory) if f.endswith('_diff.txt')]
-    diff_files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)), reverse=True)
-    
-    # # Keep only the two most recent files
-    # for old_diff in diff_files[4:]:
-    #     os.remove(os.path.join(directory, old_diff))
+def remove_swp_files(directory):
+        """Remove all .swp files in the directory and its subdirectories."""
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.swp') or '.swp_' in file:
+                    file_path = os.path.join(root, file)
+                    try:
+                        os.remove(file_path)
+                        # print(f"Removed: {file_path}")
+                    except Exception as e:
+                        print(f"Error removing {file_path}: {e}")
 
 class Watcher:
     def __init__(self, directory):
@@ -92,12 +102,41 @@ class Watcher:
         self.observer.join()
 
 class Handler(FileSystemEventHandler):
-    def on_modified(self, event):
-        """Handle file save event (Ctrl + O triggers this)."""
+    # def on_created(self, event):
+    #     """Handle file creation event."""
+    #     if not event.is_directory and not ".swp" in event.src_path:
+    #     # if not event.is_directory and not event.src_path.endswith('.swp'):
+    #         directory, file_name = os.path.split(event.src_path)
+    #         base_name = '_'.join(file_name.split('_')[:-1])
+    #         process_file(directory, base_name)
+
+    # def on_modified(self, event):
+    #     """Handle file modification event."""
+    #     # if not event.is_directory and not event.src_path.endswith('.swp'):
+    #     if not event.is_directory and not ".swp" in event.src_path:
+    #         directory, file_name = os.path.split(event.src_path)
+    #         base_name = '_'.join(file_name.split('_')[:-1])
+    #         process_file(directory, base_name)
+
+    
+    def on_created(self, event):
+        """Handle file creation event."""
         if not event.is_directory and not event.src_path.endswith('.swp'):
             directory, file_name = os.path.split(event.src_path)
+            remove_swp_files(directory)  # Remove any .swp files in the directory
             base_name = '_'.join(file_name.split('_')[:-1])
+            time.sleep(1)
             process_file(directory, base_name)
+
+    # def on_modified(self, event):
+    #     """Handle file modification event."""
+    #     if not event.is_directory and not ".swp" in event.src_path:
+    #         directory, file_name = os.path.split(event.src_path)
+    #         base_name = '_'.join(file_name.split('_')[:-1])
+    #         process_file(directory, base_name)
+    #         print(directory, base_name)
+
+
 
 if __name__ == "__main__":
     w = Watcher(backup_dir)
