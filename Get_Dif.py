@@ -25,13 +25,11 @@ def compare_files(file1, file2):
         return "Skipping binary or non-readable files."
 
 def get_latest_files(directory):
-    print(directory)
     """Get the two latest files in the directory with the same base name."""
     files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
     
     files.sort(key=lambda f: os.path.getmtime(os.path.join(directory, f)))
     
-    print("*", files)
     # Group files by base name (excluding timestamp)
     base_name_dict = {}
     for f in files:
@@ -55,7 +53,6 @@ def process_file(directory, base_name):
         for file_pair in latest_files:
 
             file1, file2 = [os.path.join(directory, f) for f in file_pair]
-            # print("*", file1, file2)
 
             diff = compare_files(file1, file2)
 
@@ -102,22 +99,6 @@ class Watcher:
         self.observer.join()
 
 class Handler(FileSystemEventHandler):
-    # def on_created(self, event):
-    #     """Handle file creation event."""
-    #     if not event.is_directory and not ".swp" in event.src_path:
-    #     # if not event.is_directory and not event.src_path.endswith('.swp'):
-    #         directory, file_name = os.path.split(event.src_path)
-    #         base_name = '_'.join(file_name.split('_')[:-1])
-    #         process_file(directory, base_name)
-
-    # def on_modified(self, event):
-    #     """Handle file modification event."""
-    #     # if not event.is_directory and not event.src_path.endswith('.swp'):
-    #     if not event.is_directory and not ".swp" in event.src_path:
-    #         directory, file_name = os.path.split(event.src_path)
-    #         base_name = '_'.join(file_name.split('_')[:-1])
-    #         process_file(directory, base_name)
-
     
     def on_created(self, event):
         """Handle file creation event."""
@@ -127,16 +108,6 @@ class Handler(FileSystemEventHandler):
             base_name = '_'.join(file_name.split('_')[:-1])
             time.sleep(1)
             process_file(directory, base_name)
-
-    # def on_modified(self, event):
-    #     """Handle file modification event."""
-    #     if not event.is_directory and not ".swp" in event.src_path:
-    #         directory, file_name = os.path.split(event.src_path)
-    #         base_name = '_'.join(file_name.split('_')[:-1])
-    #         process_file(directory, base_name)
-    #         print(directory, base_name)
-
-
 
 if __name__ == "__main__":
     w = Watcher(backup_dir)
