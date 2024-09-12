@@ -4,10 +4,12 @@ from datetime import datetime
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-src_dir = '/home/TestDir'
+src_dir = '/etc/'
 backup_dir = '/home/tharindu2/python_test/Back_up2'
 
 class FileIntegrityHandler(FileSystemEventHandler):
+    
+    # Catch when file get modified
     def on_modified(self, event):
         if event.is_directory:
             return None
@@ -18,8 +20,10 @@ class FileIntegrityHandler(FileSystemEventHandler):
         if os.path.basename(file_path) == '4913':
             return None
 
+        # Get the relative path with respect to the src_dir
         relative_path = os.path.relpath(file_path, src_dir)
 
+        # Join the relative path and the back_up paths
         final_backup_file_path = os.path.join(backup_dir, relative_path)
 
         os.makedirs(os.path.dirname(final_backup_file_path), exist_ok=True)
@@ -41,6 +45,7 @@ class FileIntegrityHandler(FileSystemEventHandler):
             self.cleanup_old_backups(final_backup_file_path)
 
     def cleanup_old_backups(self, backup_file_path):
+        
         # Get the directory and base filename
         backup_dir = os.path.dirname(backup_file_path)
         base_filename = os.path.basename(backup_file_path)

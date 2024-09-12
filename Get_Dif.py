@@ -108,7 +108,7 @@ class Handler(FileSystemEventHandler):
             base_name = '_'.join(file_name.split('_')[:-1])
 
             #add small time to create the file
-            time.sleep(1)
+            time.sleep(0.1)
             process_file(directory, base_name)
 
 if __name__ == "__main__":
