@@ -3,8 +3,9 @@ import shutil
 from datetime import datetime
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import time
 
-src_dir = '/etc/'
+src_dir = '/home/TestDir/'
 backup_dir = '/home/tharindu2/python_test/Back_up2'
 
 class FileIntegrityHandler(FileSystemEventHandler):
@@ -15,6 +16,8 @@ class FileIntegrityHandler(FileSystemEventHandler):
             return None
 
         file_path = event.src_path
+        directory, file_name = os.path.split(event.src_path)
+        remove_swp_files(directory)  # Remove any .swp files in the directory
 
         # Ignore Vim temporary file creation '4913'
         if os.path.basename(file_path) == '4913':
@@ -36,13 +39,25 @@ class FileIntegrityHandler(FileSystemEventHandler):
             return
 
         # If there is an existing backup file, rename it with a timestamp
+        # if os.path.exists(final_backup_file_path):
+        #     timestamp = datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
+        #     unix_timestamp = time.mktime(timestamp.timetuple())
+        #     versioned_backup_path = f"{final_backup_file_path}_{unix_timestamp}"
+        #     shutil.move(final_backup_file_path, versioned_backup_path)
+            
+        #     # Keep only the two most recent backups
+        #     self.cleanup_old_backups(final_backup_file_path)
+        
         if os.path.exists(final_backup_file_path):
-            timestamp = datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
-            versioned_backup_path = f"{final_backup_file_path}_{timestamp}"
+            unix_timestamp = time.time()  # Get time in seconds (with milliseconds)
+            versioned_backup_path = f"{final_backup_file_path}_{int(unix_timestamp)}"
             shutil.move(final_backup_file_path, versioned_backup_path)
             
             # Keep only the two most recent backups
             self.cleanup_old_backups(final_backup_file_path)
+
+    
+    
 
     def cleanup_old_backups(self, backup_file_path):
         
@@ -64,6 +79,17 @@ class FileIntegrityHandler(FileSystemEventHandler):
             old_backup = backup_files.pop(0)
             os.remove(os.path.join(backup_dir, old_backup))
             print(f"Removed old backup: {old_backup}")
+def remove_swp_files(directory):
+        """Remove all .swp files in the directory and its subdirectories."""
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.swp') or '.swp_' in file:
+                    file_path = os.path.join(root, file)
+                    try:
+                        os.remove(file_path)
+                        # print(f"Removed: {file_path}")
+                    except Exception as e:
+                        print(f"Error removing {file_path}: {e}")
 
 if __name__ == "__main__":
     event_handler = FileIntegrityHandler()
