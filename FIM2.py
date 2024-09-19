@@ -23,6 +23,11 @@ class FileIntegrityHandler(FileSystemEventHandler):
         if os.path.basename(file_path) == '4913':
             return None
 
+        # Check if the file is readable (not binary)
+        if not self.is_readable_text_file(file_path):
+            print(f"Skipping non-readable file: {file_path}")
+            return None
+
         # Get the relative path with respect to the src_dir
         relative_path = os.path.relpath(file_path, src_dir)
 
@@ -37,17 +42,6 @@ class FileIntegrityHandler(FileSystemEventHandler):
         except FileNotFoundError:
             print(f"File not found: {file_path}, skipping...")
             return
-
-        # If there is an existing backup file, rename it with a timestamp
-        # if os.path.exists(final_backup_file_path):
-        #     timestamp = datetime.now().strftime('%Y.%m.%d_%H.%M.%S')
-        #     unix_timestamp = time.mktime(timestamp.timetuple())
-        #     versioned_backup_path = f"{final_backup_file_path}_{unix_timestamp}"
-        #     shutil.move(final_backup_file_path, versioned_backup_path)
-            
-        #     # Keep only the two most recent backups
-        #     self.cleanup_old_backups(final_backup_file_path)
-        
         if os.path.exists(final_backup_file_path):
             unix_timestamp = time.time()  # Get time in seconds (with milliseconds)
             versioned_backup_path = f"{final_backup_file_path}_{int(unix_timestamp)}"
@@ -56,8 +50,14 @@ class FileIntegrityHandler(FileSystemEventHandler):
             # Keep only the two most recent backups
             self.cleanup_old_backups(final_backup_file_path)
 
-    
-    
+    def is_readable_text_file(self, file_path):
+        """Check if a file is readable as text."""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                file.read(1024)  # Try reading the first 1KB of the file
+            return True
+        except (UnicodeDecodeError, IOError):
+            return False
 
     def cleanup_old_backups(self, backup_file_path):
         
